@@ -1,11 +1,6 @@
 # Type Management Features
 
-<<<<<<< HEAD
-Kairoly Planning là một hệ thống hỗ trợ người dùng phát triển bản thân thông qua việc lập kế hoạch sinh hoạt và mục tiêu theo chu kỳ. Hệ thống cho phép người dùng lập kế hoạch cá nhân, chia nhỏ mục tiêu thành nhiệm vụ cụ thể, theo dõi tiến độ thực hiện và đánh giá quá trình phát triển.
-=======
-## Overview
-This document provides comprehensive instructions on the Type Management features available in the zip2 repository.
->>>>>>> 4cd00149d3efc913a98d1392ed5b380c6b2fc486
+   Kairoly Planning là một hệ thống hỗ trợ người dùng phát triển bản thân thông qua việc lập kế hoạch sinh hoạt và mục tiêu theo chu kỳ. Hệ thống cho phép người dùng lập kế hoạch cá nhân, chia nhỏ mục tiêu thành nhiệm vụ cụ thể, theo dõi tiến độ thực hiện và đánh giá quá trình phát triển.
 
 ## Random Color Selection
 The Type management system offers functionality for randomly selecting colors. This feature is useful for various applications, such as assigning different colors for different types dynamically. To utilize this feature:
@@ -13,7 +8,6 @@ The Type management system offers functionality for randomly selecting colors. T
 2. Specify any parameters if required (e.g., color palette).
 3. The system will return a randomly selected color from the specified palette.
 
-<<<<<<< HEAD
 ### 1. Yêu cầu hệ thống
 - **Node.js**: Phiên bản LTS mới nhất (khuyên dùng v18 hoặc v20)
 - **PostgreSQL**: Cơ sở dữ liệu PostgreSQL
@@ -177,19 +171,3 @@ Tất cả API nằm dưới tiền tố `/api/`:
 ## 📝 License
 
 Dự án này được phát triển cho mục đích học tập và cá nhân.
-=======
-## Weight Configuration
-Configuring weights allows for more precise management of type behaviors:
-- You can set weights for each type to influence how they interact with other elements.
-- Adjust the weights according to your application's requirements using the configuration settings provided in the settings file.
-
-## Options Popup
-The options popup provides users with a user-friendly interface:
-- Users can select from a list of available types and customize their selection.
-- To implement the options popup:
-  1. Ensure the popup module is included in your project.
-  2. Invoke the popup function during the relevant workflow.
-  3. Provide the necessary options list as a parameter.
-
-By following these instructions, you can effectively manage your types with enhanced flexibility and functionality.
->>>>>>> 4cd00149d3efc913a98d1392ed5b380c6b2fc486
