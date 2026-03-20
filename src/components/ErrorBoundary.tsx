@@ -25,11 +25,11 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
-      let errorMessage = 'An unexpected error occurred.';
+      let errorMessage = 'Một lỗi không mong muốn đã xảy ra.';
       try {
         if (this.state.error?.message.includes('OperationType')) {
            const parsed = JSON.parse(this.state.error.message);
-           errorMessage = `Database Error: ${parsed.error} on ${parsed.operationType} at ${parsed.path}`;
+           errorMessage = `Lỗi Cơ sở dữ liệu: ${parsed.error} trên ${parsed.operationType} tại ${parsed.path}`;
         } else {
            errorMessage = this.state.error?.message || errorMessage;
         }
@@ -46,7 +46,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
               onClick={() => window.location.reload()}
               className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
             >
-              Reload Page
+              Tải lại trang
             </button>
           </div>
         </div>
