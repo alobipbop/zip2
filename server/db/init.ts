@@ -7,10 +7,12 @@ export async function initDB() {
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash TEXT,
         name VARCHAR(255),
         avatar TEXT,
         age INTEGER,
         gender VARCHAR(50),
+        onboarding_completed BOOLEAN DEFAULT FALSE,
         last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );

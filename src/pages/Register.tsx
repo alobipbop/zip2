@@ -14,82 +14,65 @@ export default function Register() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Client-side validation (Alternative Flow 1)
     if (password !== confirmPassword) {
-      return setError('Passwords do not match');
+      return setError('Mật khẩu xác nhận không khớp');
     }
     if (password.length < 8) {
-      return setError('Password must be at least 8 characters');
+      return setError('Mật khẩu phải có ít nhất 8 ký tự');
     }
 
     try {
       setError('');
       setLoading(true);
-      
-      const response = await fetch('/api/auth/login', {
+
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Registration failed');
+        // Alternative Flow 2: Email exists (409) or validation error (400)
+        throw new Error(data.error || 'Đăng ký thất bại');
       }
 
-      const data = await response.json();
-      
-      await login({
-        id: data.user.id.toString(),
-        email: data.user.email,
-        name: data.user.name,
-        onboardingCompleted: data.user.onboarding_completed
-      });
-      
-      if (!data.user.onboarding_completed) {
+      // successResponse wraps: { success, data: { user, token }, message }
+      const { user, token } = data.data;
+
+      await login(
+        {
+          id: user.id.toString(),
+          email: user.email,
+          name: user.name,
+          onboarding_completed: user.onboarding_completed
+        },
+        token
+      );
+
+      if (!user.onboarding_completed) {
         navigate('/onboarding');
       } else {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to create an account.');
+      // Exception Flow 2: Network/timeout
+      if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+        setError('Lỗi kết nối mạng. Vui lòng kiểm tra đường truyền và thử lại.');
+      } else {
+        setError(err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      setError('');
-      setLoading(true);
-      
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'user@gmail.com' })
-      });
-
-      if (!response.ok) {
-        throw new Error('Registration failed');
-      }
-
-      const data = await response.json();
-      
-      await login({
-        id: data.user.id.toString(),
-        email: data.user.email,
-        name: data.user.name,
-        onboardingCompleted: data.user.onboarding_completed
-      });
-      
-      if (!data.user.onboarding_completed) {
-        navigate('/onboarding');
-      } else {
-        navigate('/dashboard');
-      }
-    } catch (err: any) {
-      setError('Failed to sign in with Google.');
-    } finally {
-      setLoading(false);
-    }
+    // TODO: Implement Google OAuth (Phase 3)
+    setError('Đăng nhập bằng Google sẽ được hỗ trợ sớm.');
   };
 
   return (
@@ -97,11 +80,11 @@ export default function Register() {
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
         <div className="text-center">
           <Target className="mx-auto h-12 w-12 text-indigo-600" />
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Create an account</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Tạo tài khoản</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Already have an account?{' '}
+            Đã có tài khoản?{' '}
             <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign in
+              Đăng nhập
             </Link>
           </p>
         </div>
@@ -115,7 +98,7 @@ export default function Register() {
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email address</label>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 required
@@ -126,23 +109,23 @@ export default function Register() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
               <input
                 type="password"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Min 8 characters"
+                placeholder="Tối thiểu 8 ký tự"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+              <label className="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
               <input
                 type="password"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm password"
+                placeholder="Nhập lại mật khẩu"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -155,7 +138,7 @@ export default function Register() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
             </button>
           </div>
         </form>
@@ -166,7 +149,7 @@ export default function Register() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white text-gray-500">Hoặc tiếp tục với</span>
             </div>
           </div>
 

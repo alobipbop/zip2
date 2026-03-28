@@ -11,6 +11,7 @@ import typesRoutes from './server/routes/types.routes.js';
 import goalsRoutes from './server/routes/goals.routes.js';
 import tasksRoutes from './server/routes/tasks.routes.js';
 import trackingsRoutes from './server/routes/trackings.routes.js';
+import reportsRoutes from './server/routes/reports.routes.js';
 
 // Import middleware & db
 import { initDB } from './server/db/init.js';
@@ -44,6 +45,7 @@ async function startServer() {
   app.use('/api/goals', goalsRoutes);
   app.use('/api', tasksRoutes);
   app.use('/api', trackingsRoutes);
+  app.use('/api/reports', reportsRoutes);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {

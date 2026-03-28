@@ -23,65 +23,44 @@ export default function Login() {
         body: JSON.stringify({ email, password })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Login failed');
+        throw new Error(data.error || 'Đăng nhập thất bại');
       }
 
-      const data = await response.json();
+      // successResponse wraps: { success, data: { user, token }, message }
+      const { user, token } = data.data;
       
-      await login({
-        id: data.user.id.toString(),
-        email: data.user.email,
-        name: data.user.name,
-        onboardingCompleted: data.user.onboarding_completed
-      });
+      await login(
+        {
+          id: user.id.toString(),
+          email: user.email,
+          name: user.name,
+          onboarding_completed: user.onboarding_completed
+        },
+        token
+      );
       
-      if (!data.user.onboarding_completed) {
+      if (!user.onboarding_completed) {
         navigate('/onboarding');
       } else {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setError('Failed to sign in. Please check your credentials.');
+      if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+        setError('Lỗi kết nối mạng. Vui lòng kiểm tra đường truyền và thử lại.');
+      } else {
+        setError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      setError('');
-      setLoading(true);
-      
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'user@gmail.com' })
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-      
-      await login({
-        id: data.user.id.toString(),
-        email: data.user.email,
-        name: data.user.name,
-        onboardingCompleted: data.user.onboarding_completed
-      });
-      
-      if (!data.user.onboarding_completed) {
-        navigate('/onboarding');
-      } else {
-        navigate('/dashboard');
-      }
-    } catch (err: any) {
-      setError('Failed to sign in with Google.');
-    } finally {
-      setLoading(false);
-    }
+    // TODO: Implement Google OAuth (Phase 3)
+    setError('Đăng nhập bằng Google sẽ được hỗ trợ sớm.');
   };
 
   return (
@@ -89,11 +68,11 @@ export default function Login() {
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
         <div className="text-center">
           <Target className="mx-auto h-12 w-12 text-indigo-600" />
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Sign in to Kairoly</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Đăng nhập Kairoly</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Or{' '}
+            Chưa có tài khoản?{' '}
             <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-              create a new account
+              Tạo tài khoản mới
             </Link>
           </p>
         </div>
@@ -107,7 +86,7 @@ export default function Login() {
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email address</label>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 required
@@ -118,7 +97,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
               <input
                 type="password"
                 required
@@ -136,7 +115,7 @@ export default function Login() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
           </div>
         </form>
@@ -147,7 +126,7 @@ export default function Login() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white text-gray-500">Hoặc tiếp tục với</span>
             </div>
           </div>
 

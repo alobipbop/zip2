@@ -10,7 +10,7 @@ export default function Onboarding() {
   const [dob, setDob] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { currentUser, login } = useAuth();
+  const { currentUser, token, login } = useAuth();
 
   const handleNext = async () => {
     if (step < 5) {
@@ -32,11 +32,14 @@ export default function Onboarding() {
           });
 
           if (response.ok) {
-            login({
-              ...currentUser,
-              name,
-              onboardingCompleted: true
-            });
+            login(
+              {
+                ...currentUser,
+                name,
+                onboarding_completed: true
+              },
+              token || ''
+            );
             navigate('/dashboard');
           }
         } catch (error) {

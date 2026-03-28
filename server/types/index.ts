@@ -1,10 +1,12 @@
 export interface User {
     id: number;
     email: string;
+    password_hash?: string;
     name?: string;
     avatar?: string;
     age?: number;
     gender?: string;
+    onboarding_completed?: boolean;
     last_login?: Date;
     created_at?: Date;
 }
