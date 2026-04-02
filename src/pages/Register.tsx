@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Target } from 'lucide-react';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -70,10 +71,54 @@ export default function Register() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    // TODO: Implement Google OAuth (Phase 3)
-    setError('Đăng nhập bằng Google sẽ được hỗ trợ sớm.');
-  };
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setError('');
+        setLoading(true);
+        const response = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: tokenResponse.access_token })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Đăng nhập Google thất bại');
+        }
+
+        const { user, token } = data.data;
+
+        await login(
+          {
+            id: user.id.toString(),
+            email: user.email,
+            name: user.name,
+            onboarding_completed: user.onboarding_completed
+          },
+          token
+        );
+
+        if (!user.onboarding_completed) {
+          navigate('/onboarding');
+        } else {
+          navigate('/dashboard');
+        }
+      } catch (err: any) {
+        if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+          setError('Lỗi kết nối mạng. Vui lòng kiểm tra đường truyền và thử lại.');
+        } else {
+          setError(err.message || 'Đăng nhập Google thất bại. Vui lòng thử lại.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => {
+      setError('Đăng nhập Google bị hủy hoặc thất bại.');
+    }
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

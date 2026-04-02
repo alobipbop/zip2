@@ -6,9 +6,9 @@ import { AppError } from '../middleware/errorHandler.js';
 export class TypesController {
     async getTypes(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId } = req.query;
-            if (!userId) throw new AppError(400, 'userId is required');
-            const types = await typesService.getTypesByUserId(Number(userId));
+            const { goalId } = req.query;
+            if (!goalId) throw new AppError(400, 'goalId is required');
+            const types = await typesService.getTypesByGoalId(Number(goalId));
             res.json(successResponse(types));
         } catch (error) {
             next(error);
@@ -17,8 +17,8 @@ export class TypesController {
 
     async createType(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId, name, color, weight } = req.body;
-            const type = await typesService.createType(userId, name, color, weight);
+            const { goalId, name, color, weight } = req.body;
+            const type = await typesService.createType(goalId, name, color, weight);
             res.json(successResponse(type, 'Type created successfully'));
         } catch (error) {
             next(error);

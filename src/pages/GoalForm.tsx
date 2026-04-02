@@ -47,23 +47,26 @@ export default function GoalForm() {
   const fetchTypesAndGoal = async () => {
     if (!currentUser) return;
     try {
-      const typesRes = await fetch(`/api/types?userId=${currentUser.id}`);
-      if (typesRes.ok) {
-        setTypes(await typesRes.json());
-      }
-
       if (id) {
         const goalRes = await fetch(`/api/goals/${id}`);
         if (goalRes.ok) {
-          const goalData = await goalRes.json();
+          const json = await goalRes.json();
+          const goalData = json.data;
           setTitle(goalData.title);
           setDescription(goalData.description || '');
           setStartDate(format(new Date(goalData.start_date), 'yyyy-MM-dd'));
           setEndDate(format(new Date(goalData.end_date), 'yyyy-MM-dd'));
 
+          const typesRes = await fetch(`/api/types?goalId=${id}`);
+          if (typesRes.ok) {
+            const typesJson = await typesRes.json();
+            setTypes(typesJson.data);
+          }
+
           const tasksRes = await fetch(`/api/goals/${id}/tasks`);
           if (tasksRes.ok) {
-            const tasksData = await tasksRes.json();
+            const tasksJson = await tasksRes.json();
+            const tasksData = tasksJson.data;
             setTasks(tasksData.map((t: any) => ({
               id: t.id,
               title: t.title,
@@ -73,6 +76,19 @@ export default function GoalForm() {
               description: t.description,
               weight: t.weight || 10
             })));
+          }
+        }
+      } else {
+        const latestRes = await fetch(`/api/goals/latest?userId=${currentUser.id}`);
+        if (latestRes.ok) {
+          const json = await latestRes.json();
+          if (json.data) {
+            const typesRes = await fetch(`/api/types?goalId=${json.data.id}`);
+            if (typesRes.ok) {
+              const typesJson = await typesRes.json();
+              // Auto-clone types from latest goal!
+              setTypes(typesJson.data);
+            }
           }
         }
       }
@@ -92,58 +108,28 @@ export default function GoalForm() {
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-  const handleAddType = async () => {
-    if (!newTypeName.trim() || !currentUser) return;
-    try {
-      const color = getRandomColor();
-      const response = await fetch('/api/types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.id, name: newTypeName.trim(), color, weight: 10 })
-      });
-      if (response.ok) {
-        const newType = await response.json();
-        setTypes([newType, ...types]);
-        setNewTypeName('');
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const handleAddType = () => {
+    if (!newTypeName.trim()) return;
+    const color = getRandomColor();
+    const newType = { id: 'temp_' + Date.now(), name: newTypeName.trim(), color, weight: 10 };
+    setTypes([newType, ...types]);
+    setNewTypeName('');
   };
 
-  const handleUpdateType = async (typeId: string, updates: Partial<TaskType>) => {
-    try {
-      const response = await fetch(`/api/types/${typeId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      });
-      if (response.ok) {
-        const updatedType = await response.json();
-        setTypes(types.map(t => t.id === typeId ? updatedType : t));
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const handleUpdateType = (typeId: string, updates: Partial<TaskType>) => {
+    setTypes(types.map(t => t.id === typeId ? { ...t, ...updates } : t));
   };
 
-  const handleDeleteType = async (typeId: string) => {
-    try {
-      const response = await fetch(`/api/types/${typeId}`, { method: 'DELETE' });
-      if (response.ok) {
-        setTypes(types.filter(t => t.id !== typeId));
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDeleteType = (typeId: string) => {
+    setTypes(types.filter(t => t.id !== typeId));
   };
 
   const saveGoal = async (status: string) => {
     if (!currentUser) return;
+    setLoading(true);
     try {
-      let goalId = id;
       const goalData = {
-        userId: currentUser.id,
+        id,
         title,
         description,
         startDate,
@@ -151,57 +137,23 @@ export default function GoalForm() {
         status
       };
 
-      if (id) {
-        await fetch(`/api/goals/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(goalData)
-        });
-      } else {
-        const res = await fetch('/api/goals', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(goalData)
-        });
-        if (res.ok) {
-          const newGoal = await res.json();
-          goalId = newGoal.id;
-        }
-      }
+      await fetch('/api/goals/save-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          goalData,
+          types,
+          tasks
+        })
+      });
 
-      if (goalId) {
-        // Delete existing tasks if editing
-        if (id) {
-          const existingTasksRes = await fetch(`/api/goals/${id}/tasks`);
-          if (existingTasksRes.ok) {
-            const existingTasks = await existingTasksRes.json();
-            for (const task of existingTasks) {
-              await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' });
-            }
-          }
-        }
-
-        // Add new tasks
-        for (const task of tasks) {
-          await fetch(`/api/goals/${goalId}/tasks`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              typeId: task.typeId,
-              title: task.title,
-              description: task.description,
-              unit: task.unit,
-              targetValue: 0,
-              targetTotal: task.targetTotal,
-              weight: task.weight
-            })
-          });
-        }
-      }
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
       setError('Có lỗi xảy ra khi lưu');
+    } finally {
+      setLoading(false);
     }
   };
 

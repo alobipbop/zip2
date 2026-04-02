@@ -19,7 +19,7 @@ export async function initDB() {
       
       CREATE TABLE IF NOT EXISTS types (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        goal_id INTEGER REFERENCES goals(id) ON DELETE CASCADE,
         name VARCHAR(100) NOT NULL,
         color VARCHAR(50) DEFAULT '#ffdac1',
         weight NUMERIC DEFAULT 10,
@@ -40,7 +40,7 @@ export async function initDB() {
       CREATE TABLE IF NOT EXISTS tasks (
         id SERIAL PRIMARY KEY,
         goal_id INTEGER REFERENCES goals(id) ON DELETE CASCADE,
-        type_id INTEGER REFERENCES types(id) ON DELETE SET NULL,
+        type_id INTEGER REFERENCES types(id) ON DELETE CASCADE,
         title VARCHAR(200) NOT NULL,
         description TEXT,
         status INTEGER DEFAULT 1,

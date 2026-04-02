@@ -25,10 +25,31 @@ export class GoalsController {
         }
     }
 
+    async getLatest(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.query;
+            if (!userId) throw new AppError(400, 'userId is required');
+            const goal = await goalsService.getLatestGoalByUserId(Number(userId));
+            res.json(successResponse(goal));
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async saveAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId, goalData, types, tasks } = req.body;
+            const goal = await goalsService.saveGoalWithEntities(userId, goalData, types, tasks);
+            res.json(successResponse(goal, 'Goal saved with entities successfully'));
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async createGoal(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId, title, description, startDate, endDate } = req.body;
-            const goal = await goalsService.createGoal(userId, title, description, startDate, endDate);
+            const { userId, title, description, startDate, endDate, status } = req.body;
+            const goal = await goalsService.createGoal(userId, title, description, startDate, endDate, status);
             res.json(successResponse(goal, 'Goal created successfully'));
         } catch (error) {
             next(error);

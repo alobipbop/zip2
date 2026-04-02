@@ -55,7 +55,9 @@ export default function Dashboard() {
     try {
       const response = await fetch(`/api/goals?userId=${currentUser.id}`);
       if (response.ok) {
-        const data: Goal[] = await response.json();
+        const json = await response.json();
+        const data: Goal[] = json.data;
+        
         const active = data.find(g => g.status === 'active');
         const draftList = data.filter(g => g.status === 'draft');
         
@@ -77,14 +79,16 @@ export default function Dashboard() {
     try {
       const tasksRes = await fetch(`/api/goals/${goalId}/tasks`);
       if (tasksRes.ok) {
-        const tasksData: Task[] = await tasksRes.json();
+        const tasksJson = await tasksRes.json();
+        const tasksData: Task[] = tasksJson.data;
         setTasks(tasksData);
 
         const trackingsMap: Record<string, Tracking[]> = {};
         for (const task of tasksData) {
           const trackingsRes = await fetch(`/api/tasks/${task.id}/trackings`);
           if (trackingsRes.ok) {
-            trackingsMap[task.id] = await trackingsRes.json();
+            const trackingsJson = await trackingsRes.json();
+            trackingsMap[task.id] = trackingsJson.data;
           }
         }
         setTrackings(trackingsMap);
@@ -110,7 +114,8 @@ export default function Dashboard() {
       });
 
       if (response.ok) {
-        const newTracking = await response.json();
+        const json = await response.json();
+        const newTracking = json.data;
         setTrackings(prev => ({
           ...prev,
           [taskId]: [newTracking, ...(prev[taskId] || [])]

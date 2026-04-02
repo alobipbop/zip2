@@ -20,7 +20,7 @@ export default function Onboarding() {
       if (currentUser) {
         setLoading(true);
         try {
-          const response = await fetch(`/api/users/${currentUser.id}`, {
+          const response = await fetch(`/api/auth/${currentUser.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -41,9 +41,12 @@ export default function Onboarding() {
               token || ''
             );
             navigate('/dashboard');
+          } else {
+            alert('Lỗi khi lưu thông tin. Vui lòng thử lại.');
           }
         } catch (error) {
           console.error('Error saving profile:', error);
+          alert('Lỗi kết nối mạng. Vui lòng thử lại.');
         } finally {
           setLoading(false);
         }

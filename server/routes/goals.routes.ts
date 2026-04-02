@@ -4,6 +4,9 @@ import { goalsController } from '../controllers/goals.controller.js';
 const router = Router();
 
 router.get('/', (req, res, next) => goalsController.getGoals(req, res, next));
+router.get('/latest', (req, res, next) => goalsController.getLatest(req, res, next));
+router.post('/save-all', (req, res, next) => goalsController.saveAll(req, res, next));
+
 router.get('/:id', (req, res, next) => goalsController.getGoal(req, res, next));
 router.post('/', (req, res, next) => goalsController.createGoal(req, res, next));
 router.put('/:id', (req, res, next) => goalsController.updateGoal(req, res, next));

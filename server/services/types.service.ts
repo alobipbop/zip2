@@ -3,11 +3,11 @@ import { TypeCategory } from '../types/index.js';
 import { AppError } from '../middleware/errorHandler.js';
 
 export class TypesService {
-    async getTypesByUserId(userId: number): Promise<TypeCategory[]> {
+    async getTypesByGoalId(goalId: number): Promise<TypeCategory[]> {
         try {
             const result = await pool.query(
-                'SELECT * FROM types WHERE user_id = $1 ORDER BY created_at DESC',
-                [userId]
+                'SELECT * FROM types WHERE goal_id = $1 ORDER BY created_at DESC',
+                [goalId]
             );
             return result.rows;
         } catch (error) {
@@ -17,15 +17,15 @@ export class TypesService {
     }
 
     async createType(
-        userId: number,
+        goalId: number,
         name: string,
         color?: string,
         weight?: number
     ): Promise<TypeCategory> {
         try {
             const result = await pool.query(
-                'INSERT INTO types (user_id, name, color, weight) VALUES ($1, $2, $3, $4) RETURNING *',
-                [userId, name, color || '#ffdac1', weight || 10]
+                'INSERT INTO types (goal_id, name, color, weight) VALUES ($1, $2, $3, $4) RETURNING *',
+                [goalId, name, color || '#ffdac1', weight || 10]
             );
             return result.rows[0];
         } catch (error) {

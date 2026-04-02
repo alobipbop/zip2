@@ -163,17 +163,88 @@ export class AuthService {
         }
     }
 
+    /**
+     * GOOGLE AUTH FLOW:
+     * 1. Nhận access token từ client
+     * 2. Gọi Google API lấy userInfo
+     * 3. Kiểm tra email trong DB
+     * 4. Nếu chưa có -> Tạo mới user
+     * 5. Generate JWT token
+     * 6. Trả về user + token
+     */
+    async googleAuth(accessToken: string): Promise<{ user: Omit<User, 'password_hash'>; token: string }> {
+        if (!accessToken) {
+            throw new AppError(400, 'Token Google là bắt buộc');
+        }
+
+        try {
+            // Lấy thông tin user từ Google
+            const googleResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+
+            if (!googleResponse.ok) {
+                throw new Error('Không thể xác thực với Google');
+            }
+
+            const googleUser = await googleResponse.json();
+            const email = googleUser.email;
+            const name = googleUser.name;
+
+            if (!email) {
+                throw new AppError(400, 'Không lấy được email từ tài khoản Google');
+            }
+
+            const client = await pool.connect();
+            try {
+                // Kiểm tra xem user đã tồn tại chưa
+                const existingUserResult = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+                let user: User;
+
+                if (existingUserResult.rows.length > 0) {
+                    // Đã tồn tại -> update last_login
+                    user = existingUserResult.rows[0];
+                    await client.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+                } else {
+                    // Chưa tồn tại -> Tạo mới (onboarding_completed = false để điều hướng sang thiết lập)
+                    await client.query('BEGIN');
+                    const insertResult = await client.query(
+                        `INSERT INTO users (email, name, onboarding_completed) VALUES ($1, $2, FALSE) RETURNING *`,
+                        [email, name]
+                    );
+                    user = insertResult.rows[0];
+                    await client.query('COMMIT');
+                }
+
+                // Cấp token
+                const token = generateToken(user);
+                return { user: sanitizeUser(user), token };
+
+            } catch (dbError) {
+                await client.query('ROLLBACK').catch(() => {});
+                throw dbError;
+            } finally {
+                client.release();
+            }
+        } catch (error) {
+            if (error instanceof AppError) throw error;
+            console.error('❌ Google auth error:', error);
+            throw new AppError(500, 'Xác thực Google thất bại. Vui lòng thử lại sau.');
+        }
+    }
+
     async updateUserProfile(userId: number, userData: Partial<User>): Promise<User> {
         try {
-            const { name, age, gender } = userData;
+            const { name, age, gender, onboarding_completed } = userData;
 
             const result = await pool.query(
                 `UPDATE users SET 
                     name = COALESCE($1, name),
                     age = COALESCE($2, age),
-                    gender = COALESCE($3, gender)
-                 WHERE id = $4 RETURNING *`,
-                [name, age, gender, userId]
+                    gender = COALESCE($3, gender),
+                    onboarding_completed = COALESCE($4, onboarding_completed)
+                 WHERE id = $5 RETURNING *`,
+                [name, age, gender, onboarding_completed, userId]
             );
 
             if (result.rows.length === 0) {

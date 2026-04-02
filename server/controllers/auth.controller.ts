@@ -23,6 +23,16 @@ export class AuthController {
         }
     }
 
+    async google(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { token } = req.body;
+            const result = await authService.googleAuth(token);
+            res.json(successResponse(result, 'Đăng nhập Google thành công'));
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async updateProfile(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
