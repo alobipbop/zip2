@@ -57,10 +57,10 @@ export default function Dashboard() {
       if (response.ok) {
         const json = await response.json();
         const data: Goal[] = json.data;
-        
+
         const active = data.find(g => g.status === 'active');
         const draftList = data.filter(g => g.status === 'draft');
-        
+
         setActiveGoal(active || null);
         setDrafts(draftList);
 
@@ -99,8 +99,29 @@ export default function Dashboard() {
   };
 
   const handleTrackSubmit = async (taskId: string) => {
-    const value = parseFloat(todayValues[taskId]);
+    let value = parseFloat(todayValues[taskId]);
     if (isNaN(value)) return;
+
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const taskTrackings = trackings[taskId] || [];
+    const totalTracked = taskTrackings.reduce((sum, t) => sum + Number(t.value), 0);
+    
+    // Khống chế giá trị nhập: không làm tổng vượt quá target_total và không làm tổng rớt xuống âm
+    const maxValueCanAdd = (task.target_total || 0) - totalTracked;
+    const minValueCanAdd = -totalTracked; 
+
+    if (value > 0 && value > maxValueCanAdd) {
+      value = maxValueCanAdd;
+    } else if (value < 0 && value < minValueCanAdd) {
+      value = minValueCanAdd;
+    }
+
+    if (value === 0) {
+      setTodayValues(prev => ({ ...prev, [taskId]: '' }));
+      return; 
+    }
 
     try {
       const response = await fetch(`/api/tasks/${taskId}/trackings`, {
@@ -131,13 +152,13 @@ export default function Dashboard() {
     const taskTrackings = trackings[task.id] || [];
     const totalTracked = taskTrackings.reduce((sum, t) => sum + Number(t.value), 0);
     const target = task.target_total || 1;
-    return Math.min(100, Math.round((totalTracked / target) * 100));
+    return Math.max(0, Math.min(100, Math.round((totalTracked / target) * 100)));
   };
 
   const calculateOverallProgress = () => {
     if (tasks.length === 0) return 0;
     const totalProgress = tasks.reduce((sum, task) => sum + calculateTaskProgress(task), 0);
-    return Math.round(totalProgress / tasks.length);
+    return Math.max(0, Math.min(100, Math.round(totalProgress / tasks.length)));
   };
 
   const handleCompleteGoal = async () => {
@@ -207,9 +228,9 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
               {/* Tiến độ tổng thể */}
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Tiến độ tổng thể</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Tiến độ chung</h3>
               <div className="flex items-center gap-4">
                 <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
                   <div
@@ -221,8 +242,8 @@ export default function Dashboard() {
               </div>
 
               {/* Thời gian */}
-              <div className="mt-6 pt-6 border-t border-gray-100">
-                <div className="flex items-center justify-between mb-3">
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-gray-500">Thời gian</h4>
                   <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">
                     Còn {daysRemaining} ngày
@@ -231,9 +252,8 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3">
                   <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        timeProgress > 90 ? 'bg-red-500' : timeProgress > 70 ? 'bg-amber-500' : 'bg-emerald-500'
-                      }`}
+                      className={`h-full rounded-full transition-all duration-500 ${timeProgress > 90 ? 'bg-red-500' : timeProgress > 70 ? 'bg-amber-500' : 'bg-emerald-500'
+                        }`}
                       style={{ width: `${timeProgress}%` }}
                     />
                   </div>
@@ -242,12 +262,12 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <h3 className="text-xl font-bold text-gray-900">Tracking hôm nay</h3>
               {tasks.map(task => {
                 const progress = calculateTaskProgress(task);
                 return (
-                  <div key={task.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center gap-6">
+                  <div key={task.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="flex-1">
                       <h4 className="font-semibold text-gray-900 text-lg">{task.title}</h4>
                       <div className="flex items-center gap-3 mt-2">
@@ -260,7 +280,7 @@ export default function Dashboard() {
                         <span className="text-sm font-medium text-gray-500">{progress}%</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <input
                         type="number"
