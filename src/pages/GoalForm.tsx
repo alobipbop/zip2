@@ -30,7 +30,7 @@ export default function GoalForm() {
   const [types, setTypes] = useState<TaskType[]>([]);
   const [newTypeName, setNewTypeName] = useState('');
   const [activeTypePopup, setActiveTypePopup] = useState<string | null>(null);
-  
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
@@ -101,7 +101,7 @@ export default function GoalForm() {
 
   const getRandomColor = () => {
     const colors = [
-      '#ffdac1', '#ffb7b2', '#ff9aa2', '#e2f0cb', '#b5ead7', '#c7ceea', 
+      '#ffdac1', '#ffb7b2', '#ff9aa2', '#e2f0cb', '#b5ead7', '#c7ceea',
       '#f1cbff', '#cbf0ff', '#cbe2ff', '#ffe5cb', '#ffcbe6', '#d4ffcb',
       '#ffd1d1', '#fff5ba', '#baffc9', '#bae1ff', '#e8baff', '#ffbdf0'
     ];
@@ -183,27 +183,27 @@ export default function GoalForm() {
   if (loading) return <div className="flex justify-center py-12">Đang tải...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto bg-white min-h-[80vh] shadow-sm border border-gray-200 rounded-2xl overflow-hidden flex flex-col">
+    <div className="max-w-6xl mx-auto bg-white min-h-[80vh] shadow-sm border border-gray-200 rounded-2xl flex flex-col">
       {/* Header */}
-      <div className="p-8 border-b border-gray-200 bg-gray-50/50">
+      <div className="p-8 border-b border-gray-200 bg-gray-50/50 rounded-t-2xl">
         <h1 className="text-3xl font-bold text-gray-900">{title || 'Tên Goal mới'}</h1>
       </div>
-      
+
       {/* Tabs */}
       <div className="flex border-b border-gray-200 bg-[#7acb98]">
-        <button 
+        <button
           onClick={() => setActiveTab('general')}
           className={`flex-1 py-4 text-center font-medium transition-colors text-lg ${activeTab === 'general' ? 'bg-white text-gray-900' : 'text-emerald-950 hover:bg-emerald-400'}`}
         >
           Thông tin chung
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('types')}
           className={`flex-1 py-4 text-center font-medium transition-colors text-lg ${activeTab === 'types' ? 'bg-white text-gray-900' : 'text-emerald-950 hover:bg-emerald-400'}`}
         >
           Phân loại
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('tasks')}
           className={`flex-1 py-4 text-center font-medium transition-colors text-lg ${activeTab === 'tasks' ? 'bg-white text-gray-900' : 'text-emerald-950 hover:bg-emerald-400'}`}
         >
@@ -216,7 +216,7 @@ export default function GoalForm() {
           {error}
         </div>
       )}
-      
+
       {/* Content */}
       <div className="p-8 flex-1 bg-gray-50/30">
         {activeTab === 'general' && (
@@ -270,11 +270,11 @@ export default function GoalForm() {
         {activeTab === 'types' && (
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="flex items-center border-b-2 border-blue-500 pb-2 mb-8">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={newTypeName}
                 onChange={(e) => setNewTypeName(e.target.value)}
-                placeholder="Thêm một phân loại mới" 
+                placeholder="Thêm một phân loại mới"
                 className="bg-transparent border-none focus:outline-none flex-1 text-lg text-center"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAddType();
@@ -296,8 +296,8 @@ export default function GoalForm() {
                         <div className="flex items-center justify-between p-3 bg-white/60 rounded-lg hover:bg-white/80 transition-colors">
                           <div className="flex items-center gap-3">
                             <div className="relative w-5 h-5 rounded shadow-sm border border-gray-200" style={{ backgroundColor: type.color || '#000' }}>
-                              <input 
-                                type="color" 
+                              <input
+                                type="color"
                                 value={type.color || '#000000'}
                                 onChange={(e) => handleUpdateType(type.id, { color: e.target.value })}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -313,8 +313,8 @@ export default function GoalForm() {
                             <Star className="w-5 h-5 text-gray-600" />
                             <span className="font-medium text-gray-700">Đặt weight</span>
                           </div>
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             value={type.weight ?? ''}
                             onChange={(e) => handleUpdateType(type.id, { weight: e.target.value ? Number(e.target.value) : null })}
                             className="w-20 bg-transparent text-right text-gray-400 focus:text-gray-900 focus:outline-none font-medium"
@@ -323,7 +323,7 @@ export default function GoalForm() {
                         </div>
 
                         {/* Xóa thể loại */}
-                        <button 
+                        <button
                           onClick={() => {
                             handleDeleteType(type.id);
                             setActiveTypePopup(null);
@@ -336,7 +336,7 @@ export default function GoalForm() {
                       </div>
                     </div>
                   ) : (
-                    <div 
+                    <div
                       className="p-4 rounded-xl flex items-center justify-between group cursor-pointer hover:opacity-90 transition-opacity"
                       style={{ backgroundColor: type.color || '#ffdac1' }}
                       onClick={() => setActiveTypePopup(type.id)}
@@ -358,9 +358,9 @@ export default function GoalForm() {
           <div className="space-y-6">
             <div className="flex items-center border-b-2 border-blue-500 pb-2 mb-8 max-w-3xl mx-auto">
               <Plus className="w-6 h-6 text-gray-400 mr-2" />
-              <input 
-                type="text" 
-                placeholder="Thêm nhiệm vụ mới" 
+              <input
+                type="text"
+                placeholder="Thêm nhiệm vụ mới"
                 className="bg-transparent border-none focus:outline-none flex-1 text-lg"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.currentTarget.value) {
@@ -370,7 +370,7 @@ export default function GoalForm() {
                 }}
               />
             </div>
-            
+
             <div className="grid grid-cols-6 gap-4 font-bold text-center mb-4 text-gray-700">
               <div className="col-span-1">Phân loại</div>
               <div className="col-span-1">Nhiệm vụ</div>
@@ -379,14 +379,14 @@ export default function GoalForm() {
               <div className="col-span-1">Ghi chú</div>
               <div className="col-span-1"></div>
             </div>
-            
+
             {tasks.map((task, index) => (
               <div key={index} className="grid grid-cols-6 gap-4 items-center bg-[#e8f4f8] p-4 rounded-xl mb-3 relative">
                 <div className="col-span-1">
                   <div className="relative">
-                    <select 
-                      value={task.typeId} 
-                      onChange={(e) => updateTask(index, 'typeId', e.target.value)} 
+                    <select
+                      value={task.typeId}
+                      onChange={(e) => updateTask(index, 'typeId', e.target.value)}
                       className="w-full rounded-full px-4 py-2 appearance-none font-medium text-gray-900 focus:outline-none cursor-pointer"
                       style={{ backgroundColor: types.find(t => t.id === task.typeId)?.color || '#ffdac1' }}
                     >
@@ -397,24 +397,24 @@ export default function GoalForm() {
                   </div>
                 </div>
                 <div className="col-span-1">
-                  <input 
-                    type="text" 
-                    value={task.title} 
-                    onChange={(e) => updateTask(index, 'title', e.target.value)} 
-                    className="w-full bg-transparent border-none focus:outline-none text-center font-medium" 
+                  <input
+                    type="text"
+                    value={task.title}
+                    onChange={(e) => updateTask(index, 'title', e.target.value)}
+                    className="w-full bg-transparent border-none focus:outline-none text-center font-medium"
                   />
                 </div>
                 <div className="col-span-1">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={task.description || ''}
                     onChange={(e) => updateTask(index, 'description', e.target.value)}
-                    placeholder="Mô tả" 
-                    className="w-full bg-transparent border-none focus:outline-none text-center text-gray-600" 
+                    placeholder="Mô tả"
+                    className="w-full bg-transparent border-none focus:outline-none text-center text-gray-600"
                   />
                 </div>
                 <div className="col-span-1 text-center">
-                  <button 
+                  <button
                     onClick={() => setTrackingPopupIndex(trackingPopupIndex === index ? null : index)}
                     className="text-gray-600 hover:text-indigo-600 font-medium transition-colors"
                   >
@@ -422,12 +422,12 @@ export default function GoalForm() {
                   </button>
                 </div>
                 <div className="col-span-1">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={task.note || ''}
                     onChange={(e) => updateTask(index, 'note', e.target.value)}
-                    placeholder="Ghi chú" 
-                    className="w-full bg-transparent border-none focus:outline-none text-center text-gray-600" 
+                    placeholder="Ghi chú"
+                    className="w-full bg-transparent border-none focus:outline-none text-center text-gray-600"
                   />
                 </div>
                 <div className="col-span-1 text-center">
@@ -435,41 +435,41 @@ export default function GoalForm() {
                     <Trash2 className="w-5 h-5 mx-auto" />
                   </button>
                 </div>
-                
+
                 {/* Tracking Popup */}
                 {trackingPopupIndex === index && (
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-xl rounded-2xl p-6 z-20 w-80 border border-gray-100">
                     <h3 className="text-lg font-bold text-center mb-6 text-gray-900">Setting</h3>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <label className="text-sm font-medium text-gray-700">The unit:</label>
-                        <input 
-                          type="text" 
-                          value={task.unit} 
-                          onChange={(e) => updateTask(index, 'unit', e.target.value)} 
-                          className="border border-gray-300 rounded-lg px-3 py-2 w-32 focus:outline-none focus:border-indigo-500" 
+                        <label className="text-sm font-medium text-gray-700">Unit:</label>
+                        <input
+                          type="text"
+                          value={task.unit}
+                          onChange={(e) => updateTask(index, 'unit', e.target.value)}
+                          className="border border-gray-300 rounded-lg px-3 py-2 w-32 focus:outline-none focus:border-indigo-500"
                         />
                       </div>
                       <div className="flex justify-between items-center">
                         <label className="text-sm font-medium text-gray-700">Set total:</label>
-                        <input 
-                          type="number" 
-                          value={task.targetTotal} 
-                          onChange={(e) => updateTask(index, 'targetTotal', Number(e.target.value))} 
-                          className="border border-gray-300 rounded-lg px-3 py-2 w-32 focus:outline-none focus:border-indigo-500" 
+                        <input
+                          type="number"
+                          value={task.targetTotal}
+                          onChange={(e) => updateTask(index, 'targetTotal', Number(e.target.value))}
+                          className="border border-gray-300 rounded-lg px-3 py-2 w-32 focus:outline-none focus:border-indigo-500"
                         />
                       </div>
                       <div className="flex justify-between items-center">
                         <label className="text-sm font-medium text-gray-700">Weight:</label>
-                        <input 
-                          type="number" 
-                          value={task.weight || 10} 
-                          onChange={(e) => updateTask(index, 'weight', Number(e.target.value))} 
-                          className="border border-gray-300 rounded-lg px-3 py-2 w-32 focus:outline-none focus:border-indigo-500" 
+                        <input
+                          type="number"
+                          value={task.weight || 10}
+                          onChange={(e) => updateTask(index, 'weight', Number(e.target.value))}
+                          className="border border-gray-300 rounded-lg px-3 py-2 w-32 focus:outline-none focus:border-indigo-500"
                         />
                       </div>
-                      <button 
-                        onClick={() => setTrackingPopupIndex(null)} 
+                      <button
+                        onClick={() => setTrackingPopupIndex(null)}
                         className="w-full py-3 bg-indigo-500 text-white font-medium rounded-xl mt-6 hover:bg-indigo-600 transition-colors"
                       >
                         Xong
@@ -487,17 +487,17 @@ export default function GoalForm() {
           </div>
         )}
       </div>
-      
+
       {/* Footer Buttons */}
-      <div className="p-6 border-t border-gray-200 flex justify-end gap-4 bg-white">
-        <button 
-          onClick={handleSaveDraft} 
+      <div className="p-6 border-t border-gray-200 flex justify-end gap-4 bg-white rounded-b-2xl">
+        <button
+          onClick={handleSaveDraft}
           className="px-8 py-3 bg-[#2d2d2d] text-white font-medium rounded-xl hover:bg-black transition-colors"
         >
           Lưu bản nháp
         </button>
-        <button 
-          onClick={handlePublish} 
+        <button
+          onClick={handlePublish}
           className="px-8 py-3 bg-[#7b83ff] text-white font-medium rounded-xl hover:bg-indigo-500 transition-colors"
         >
           Xuất bản

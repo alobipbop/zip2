@@ -12,7 +12,7 @@ export default function Landing() {
         </div>
         <div className="hidden md:flex items-center gap-8">
           <a href="#" className="text-gray-600 hover:text-gray-900 font-medium">Hướng dẫn</a>
-          <a href="#" className="text-gray-600 hover:text-gray-900 font-medium">Lịch sử</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900 font-medium">Khác</a>
         </div>
         <div className="flex items-center gap-4">
           <Link to="/login" className="px-6 py-2 bg-gray-800 text-white font-medium rounded-md hover:bg-gray-900 transition-colors">Đăng nhập</Link>
@@ -40,8 +40,8 @@ export default function Landing() {
       <section className="py-24 px-8 max-w-6xl mx-auto text-center">
         <h2 className="text-4xl font-bold mb-8 text-gray-900">Bạn có đang rơi vào những điều này?</h2>
         <p className="text-gray-600 mb-16 max-w-2xl mx-auto text-lg leading-relaxed">
-          Lập kế hoạch nhưng không theo được đến cuối tháng<br/>
-          Kế hoạch ghi ở nhiều nơi, cuối tháng tổng kết rất mệt<br/>
+          Bạn đã lập được kế hoạch, nhưng không theo được đến cùng<br/>
+          Kế hoạch ghi ở nhiều nơi, khó để theo dõi và tổng kết<br/>
           Không biết mình có thực sự tiến bộ hay không<br/>
           Thiếu động lực vì không nhìn thấy kết quả rõ ràng
         </p>

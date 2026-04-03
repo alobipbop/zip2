@@ -207,29 +207,29 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Tiến độ tổng thể</h3>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                    <div
-                      className="bg-indigo-600 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${overallProgress}%` }}
-                    />
-                  </div>
-                  <span className="font-bold text-indigo-600 w-12 text-right">{overallProgress}%</span>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              {/* Tiến độ tổng thể */}
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Tiến độ tổng thể</h3>
+              <div className="flex items-center gap-4">
+                <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                  <div
+                    className="bg-indigo-600 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${overallProgress}%` }}
+                  />
                 </div>
+                <span className="font-bold text-indigo-600 w-12 text-right">{overallProgress}%</span>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Thời gian</h3>
-                  <span className="text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
+              {/* Thời gian */}
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-gray-500">Thời gian</h4>
+                  <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">
                     Còn {daysRemaining} ngày
                   </span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         timeProgress > 90 ? 'bg-red-500' : timeProgress > 70 ? 'bg-amber-500' : 'bg-emerald-500'
@@ -237,7 +237,7 @@ export default function Dashboard() {
                       style={{ width: `${timeProgress}%` }}
                     />
                   </div>
-                  <span className="font-bold text-gray-600 w-12 text-right">{timeProgress}%</span>
+                  <span className="font-semibold text-gray-400 text-xs w-10 text-right">{timeProgress}%</span>
                 </div>
               </div>
             </div>
