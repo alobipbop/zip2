@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { useParams, Link } from 'react-router-dom';
 import { Download, ArrowLeft, Target, CheckCircle2, TrendingUp, Calendar, BarChart3, Clock, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,6 +9,7 @@ import {
   BarChart, Bar, Cell, Legend
 } from 'recharts';
 import { motion } from 'motion/react';
+import { apiFetch } from '../lib/api';
 
 interface TaskReport {
   id: number;
@@ -71,18 +71,17 @@ export default function Report() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { currentUser } = useAuth();
 
   useEffect(() => {
     fetchReport();
-  }, [id, currentUser]);
+  }, [id]);
 
   const fetchReport = async () => {
-    if (!currentUser || !id) return;
+    if (!id) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/reports/${id}`);
+      const res = await apiFetch(`/api/reports/${id}`);
       if (res.ok) {
         const json = await res.json();
         setReport(json.data);

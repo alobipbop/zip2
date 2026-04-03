@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Target, CheckCircle2, Plus, Search, Settings } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
+import { apiFetch } from '../lib/api';
 
 interface Goal {
   id: string;
@@ -37,7 +38,6 @@ export default function Dashboard() {
   const [drafts, setDrafts] = useState<Goal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [trackings, setTrackings] = useState<Record<string, Tracking[]>>({});
-  const [typeWeights, setTypeWeights] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [todayValues, setTodayValues] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,7 +53,7 @@ export default function Dashboard() {
   const fetchGoals = async () => {
     if (!currentUser) return;
     try {
-      const response = await fetch(`/api/goals?userId=${currentUser.id}`);
+      const response = await apiFetch(`/api/goals?userId=${currentUser.id}`);
       if (response.ok) {
         const json = await response.json();
         const data: Goal[] = json.data;
@@ -77,7 +77,7 @@ export default function Dashboard() {
 
   const fetchTasksAndTrackings = async (goalId: string) => {
     try {
-      const tasksRes = await fetch(`/api/goals/${goalId}/tasks`);
+      const tasksRes = await apiFetch(`/api/goals/${goalId}/tasks`);
       if (tasksRes.ok) {
         const tasksJson = await tasksRes.json();
         const tasksData: Task[] = tasksJson.data;
@@ -85,7 +85,7 @@ export default function Dashboard() {
 
         const trackingsMap: Record<string, Tracking[]> = {};
         for (const task of tasksData) {
-          const trackingsRes = await fetch(`/api/tasks/${task.id}/trackings`);
+          const trackingsRes = await apiFetch(`/api/tasks/${task.id}/trackings`);
           if (trackingsRes.ok) {
             const trackingsJson = await trackingsRes.json();
             trackingsMap[task.id] = trackingsJson.data;
@@ -107,10 +107,10 @@ export default function Dashboard() {
 
     const taskTrackings = trackings[taskId] || [];
     const totalTracked = taskTrackings.reduce((sum, t) => sum + Number(t.value), 0);
-    
+
     // Khống chế giá trị nhập: không làm tổng vượt quá target_total và không làm tổng rớt xuống âm
     const maxValueCanAdd = (task.target_total || 0) - totalTracked;
-    const minValueCanAdd = -totalTracked; 
+    const minValueCanAdd = -totalTracked;
 
     if (value > 0 && value > maxValueCanAdd) {
       value = maxValueCanAdd;
@@ -120,13 +120,12 @@ export default function Dashboard() {
 
     if (value === 0) {
       setTodayValues(prev => ({ ...prev, [taskId]: '' }));
-      return; 
+      return;
     }
 
     try {
-      const response = await fetch(`/api/tasks/${taskId}/trackings`, {
+      const response = await apiFetch(`/api/tasks/${taskId}/trackings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           value,
           trackDate: new Date().toISOString(),
@@ -164,9 +163,8 @@ export default function Dashboard() {
   const handleCompleteGoal = async () => {
     if (!activeGoal) return;
     try {
-      const response = await fetch(`/api/goals/${activeGoal.id}`, {
+      const response = await apiFetch(`/api/goals/${activeGoal.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...activeGoal,
           startDate: activeGoal.start_date,
@@ -345,7 +343,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="p-4 flex-1 flex flex-col">
-                    <h4 className="font-bold text-xl text-gray-900 mb-1 line-clamp-1">{draft.title || 'Untitled Goal'}</h4>
+                    <Link to={`/goals/${draft.id}/edit`}>
+                      <h4 className="font-bold text-xl text-gray-900 mb-1 line-clamp-1 hover:text-blue-800 transition-colors cursor-pointer">
+                        {draft.title || 'Untitled Goal'}
+                      </h4>
+                    </Link>                    
                     <p className="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">{draft.description || 'Mô tả (nếu có)'}</p>
                     <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                       <span className="text-xs text-gray-400">

@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { tasksController } from '../controllers/tasks.controller.js';
 import { trackingsController } from '../controllers/trackings.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.use(authenticate);
 
 // Task routes
 router.get('/goals/:goalId/tasks', (req, res, next) => tasksController.getTasks(req, res, next));

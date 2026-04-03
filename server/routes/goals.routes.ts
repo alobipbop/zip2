@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { goalsController } from '../controllers/goals.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.use(authenticate);
 
 router.get('/', (req, res, next) => goalsController.getGoals(req, res, next));
 router.get('/latest', (req, res, next) => goalsController.getLatest(req, res, next));

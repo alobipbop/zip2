@@ -32,10 +32,10 @@ export default function Layout() {
           <div className="w-8 h-8 bg-gray-900 rounded-full"></div>
           <span className="font-bold text-xl text-gray-900">Kairoly Planning</span>
         </div>
-        
+
         <nav className="hidden md:flex items-center gap-8">
-          <NavLink to="/dashboard" className={({isActive}) => isActive ? "text-indigo-600 font-medium" : "text-gray-600 hover:text-gray-900"}>Dashboard</NavLink>
-          <NavLink to="/history" className={({isActive}) => isActive ? "text-indigo-600 font-medium" : "text-gray-600 hover:text-gray-900"}>Lịch sử</NavLink>
+          <NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-indigo-600 font-medium" : "text-gray-600 hover:text-gray-900"}>Dashboard</NavLink>
+          <NavLink to="/history" className={({ isActive }) => isActive ? "text-indigo-600 font-medium" : "text-gray-600 hover:text-gray-900"}>Lịch sử</NavLink>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -59,7 +59,7 @@ export default function Layout() {
                 Vui lòng xác thực email của bạn để sử dụng đầy đủ tính năng.
                 {resendStatus && <span className="ml-2 font-semibold">{resendStatus}</span>}
               </p>
-              <button 
+              <button
                 onClick={handleResendVerification}
                 className="text-sm font-medium text-yellow-800 underline hover:text-yellow-900"
               >
@@ -68,7 +68,7 @@ export default function Layout() {
             </div>
           </div>
         )}
-        <div className="p-8 max-w-5xl mx-auto">
+        <div className="p-8">
           <Outlet />
         </div>
       </main>

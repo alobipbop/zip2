@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { typesController } from '../controllers/types.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.use(authenticate);
 
 router.get('/', (req, res, next) => typesController.getTypes(req, res, next));
 router.post('/', (req, res, next) => typesController.createType(req, res, next));

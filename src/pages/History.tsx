@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { History as HistoryIcon, FileText, Copy } from 'lucide-react';
+import { History as HistoryIcon, FileText } from 'lucide-react';
 import { format } from 'date-fns';
+import { apiFetch } from '../lib/api';
 
 interface Goal {
   id: string;
@@ -25,9 +26,10 @@ export default function History() {
   const fetchHistory = async () => {
     if (!currentUser) return;
     try {
-      const response = await fetch(`/api/goals?userId=${currentUser.id}`);
+      const response = await apiFetch(`/api/goals?userId=${currentUser.id}`);
       if (response.ok) {
-        const data: Goal[] = await response.json();
+        const json = await response.json();
+        const data: Goal[] = json.data;
         const historyGoals = data.filter(g => ['completed', 'early_ended', 'auto_closed'].includes(g.status));
         setGoals(historyGoals.sort((a, b) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime()));
       }
@@ -65,11 +67,10 @@ export default function History() {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-xl font-bold text-gray-900">{goal.title}</h3>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    goal.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                    goal.status === 'early_ended' ? 'bg-amber-100 text-amber-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${goal.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                      goal.status === 'early_ended' ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-700'
+                    }`}>
                     {goal.status === 'completed' ? 'HOÀN THÀNH' : goal.status === 'early_ended' ? 'KẾT THÚC SỚM' : 'TỰ ĐỘNG ĐÓNG'}
                   </span>
                 </div>
@@ -82,7 +83,7 @@ export default function History() {
                   </p>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Link
                   to={`/reports/${goal.id}`}
