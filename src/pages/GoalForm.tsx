@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Trash2, ChevronDown, Star } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Star, AlertCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { apiFetch } from '../lib/api';
 
@@ -60,6 +60,7 @@ export default function GoalForm() {
   const [endDate, setEndDate] = useState(format(addDays(new Date(), 37), 'yyyy-MM-dd'));
   const [tasks, setTasks] = useState<TaskDraft[]>([]);
   const [error, setError] = useState('');
+  const [errorDialog, setErrorDialog] = useState('');
   const [trackingPopupIndex, setTrackingPopupIndex] = useState<number | null>(null);
   const { currentUser } = useAuth();
 
@@ -182,9 +183,24 @@ export default function GoalForm() {
   const handleSaveDraft = () => saveGoal('draft');
 
   const handlePublish = () => {
-    if (!title) return setError('Vui lòng nhập tên kế hoạch');
-    if (tasks.length === 0) return setError('Cần ít nhất một nhiệm vụ');
-    if (tasks.some(t => !t.title || !t.typeId || !t.targetTotal)) return setError('Tất cả nhiệm vụ phải có tên, phân loại và chỉ tiêu');
+    if (!title.trim()) return setErrorDialog('Vui lòng nhập tên kế hoạch');
+    if (types.length === 0) return setErrorDialog('Cần ít nhất một phân loại');
+    if (tasks.length === 0) return setErrorDialog('Cần ít nhất một nhiệm vụ');
+    if (tasks.some(t => !t.title?.trim())) return setErrorDialog('Tất cả nhiệm vụ phải có tên');
+    if (tasks.some(t => !t.typeId)) return setErrorDialog('Tất cả nhiệm vụ phải có phân loại');
+    if (tasks.some(t => !t.targetTotal)) return setErrorDialog('Tất cả nhiệm vụ phải có chỉ tiêu');
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const now = new Date();
+    const minEnd = addDays(now, 7);
+    const diffDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (start >= end) return setErrorDialog('Ngày bắt đầu phải trước ngày kết thúc');
+    if (end <= minEnd) return setErrorDialog('Ngày kết thúc phải sau ít nhất 7 ngày kể từ hôm nay');
+    if (diffDays < 7) return setErrorDialog('Khoảng thời gian tối thiểu là 7 ngày');
+    if (diffDays > 365) return setErrorDialog('Khoảng thời gian tối đa là 365 ngày');
+
     saveGoal('active');
   };
 
@@ -227,6 +243,23 @@ export default function GoalForm() {
       {error && (
         <div className="bg-red-50 border-b border-red-200 text-red-600 px-8 py-3 text-sm">
           {error}
+        </div>
+      )}
+
+      {/* Validation Error Dialog */}
+      {errorDialog && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-80 text-center space-y-4">
+            <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
+            <h3 className="text-lg font-bold text-gray-900">Không thể xuất bản</h3>
+            <p className="text-sm text-gray-600">{errorDialog}</p>
+            <button
+              onClick={() => setErrorDialog('')}
+              className="w-full py-2.5 rounded-xl bg-gray-900 text-white font-medium hover:bg-black transition-colors"
+            >
+              Đã hiểu
+            </button>
+          </div>
         </div>
       )}
 
@@ -403,7 +436,7 @@ export default function GoalForm() {
                       className="w-full rounded-full px-3 py-2 appearance-none font-medium text-gray-900 focus:outline-none cursor-pointer text-sm"
                       style={{ backgroundColor: types.find(t => t.id === task.typeId)?.color || '#ffdac1' }}
                     >
-                      <option value="">Chọn phân loại</option>
+                      {types.length === 0 && <option value="">Thêm phân loại</option>}
                       {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
                     <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-700" />

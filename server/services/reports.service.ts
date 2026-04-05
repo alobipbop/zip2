@@ -91,7 +91,7 @@ export class ReportsService {
                     target_total: Number(task.target_total) || 0,
                     totalTracked,
                     progress,
-                    weight: Number(task.weight) || 10,
+                    weight: Number(task.weight) ?? 10,
                     type_id: task.type_id
                 });
             }

@@ -47,6 +47,7 @@ export async function initDB() {
         unit VARCHAR(50),
         target_value NUMERIC,
         target_total NUMERIC,
+        weight NUMERIC DEFAULT 10,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -59,6 +60,12 @@ export async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Migration: add weight column to tasks if not exists
+    await client.query(`
+      ALTER TABLE tasks ADD COLUMN IF NOT EXISTS weight NUMERIC DEFAULT 10;
+    `);
+
     console.log('✅ Database initialized successfully');
     client.release();
   } catch (error) {
