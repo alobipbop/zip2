@@ -19,6 +19,15 @@ interface DailyEntry {
     cumulativeProgress: number;
 }
 
+interface TypeReport {
+    id: number;
+    name: string;
+    color: string;
+    totalTasks: number;
+    completedTasks: number;
+    progress: number;
+}
+
 interface ReportData {
     goal: {
         id: number;
@@ -36,6 +45,7 @@ interface ReportData {
         timeProgress: number;
     };
     tasks: TaskReport[];
+    typeReports: TypeReport[];
     dailyHistory: DailyEntry[];
 }
 
@@ -103,6 +113,27 @@ export class ReportsService {
                 ? Math.round(taskReports.reduce((sum, t) => sum + t.progress, 0) / totalTasks)
                 : 0;
 
+            // 4b. Build type reports
+            const typesResult = await pool.query(
+                'SELECT * FROM types WHERE goal_id = $1 ORDER BY created_at ASC',
+                [goalId]
+            );
+            const typeReports: TypeReport[] = typesResult.rows.map((type: any) => {
+                const typeTasks = taskReports.filter(t => t.type_id === type.id);
+                const typeCompleted = typeTasks.filter(t => t.progress >= 100).length;
+                const typeProgress = typeTasks.length > 0
+                    ? Math.round(typeTasks.reduce((sum, t) => sum + t.progress, 0) / typeTasks.length)
+                    : 0;
+                return {
+                    id: type.id,
+                    name: type.name,
+                    color: type.color || '#ffdac1',
+                    totalTasks: typeTasks.length,
+                    completedTasks: typeCompleted,
+                    progress: typeProgress
+                };
+            });
+
             // 5. Build daily history
             const dailyMap: Record<string, number> = {};
             for (const tracking of allTrackings) {
@@ -141,6 +172,7 @@ export class ReportsService {
                     timeProgress
                 },
                 tasks: taskReports,
+                typeReports,
                 dailyHistory
             };
         } catch (error) {

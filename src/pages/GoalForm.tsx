@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Trash2, ChevronDown, Star, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Star, AlertCircle, GripVertical } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { apiFetch } from '../lib/api';
 
@@ -62,6 +62,7 @@ export default function GoalForm() {
   const [error, setError] = useState('');
   const [errorDialog, setErrorDialog] = useState('');
   const [trackingPopupIndex, setTrackingPopupIndex] = useState<number | null>(null);
+  const dragIndexRef = useRef<number | null>(null);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -216,6 +217,14 @@ export default function GoalForm() {
 
   const removeTask = (index: number) => {
     setTasks(tasks.filter((_, i) => i !== index));
+  };
+
+  const moveTask = (from: number, to: number) => {
+    if (from === to) return;
+    const next = [...tasks];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setTasks(next);
   };
 
   if (loading) return <div className="flex justify-center py-12">Đang tải...</div>;
@@ -414,7 +423,8 @@ export default function GoalForm() {
 
             {/* Table header */}
             {tasks.length > 0 && (
-              <div className="grid grid-cols-19 gap-3 px-4 text-s font-bold text-gray-600 uppercase tracking-wide mb-1">
+              <div className="grid grid-cols-20 gap-3 px-4 text-s font-bold text-gray-600 uppercase tracking-wide mb-1">
+                <div className="col-span-1"></div>
                 <div className="col-span-3 text-center">Phân loại</div>
                 <div className="col-span-5 text-center">Nhiệm vụ</div>
                 <div className="col-span-5 text-center">Mô tả</div>
@@ -425,7 +435,19 @@ export default function GoalForm() {
             )}
 
             {tasks.map((task, index) => (
-              <div key={index} className="grid grid-cols-19 gap-3 items-start bg-[#e8f4f8] p-4 rounded-xl relative">
+              <div
+                key={index}
+                draggable
+                onDragStart={() => { dragIndexRef.current = index; }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => { if (dragIndexRef.current !== null) moveTask(dragIndexRef.current, index); dragIndexRef.current = null; }}
+                onDragEnd={() => { dragIndexRef.current = null; }}
+                className="grid grid-cols-20 gap-3 items-start bg-[#e8f4f8] p-4 rounded-xl relative"
+              >
+                {/* Drag handle */}
+                <div className="col-span-1 flex items-start justify-center pt-4 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500">
+                  <GripVertical className="w-4 h-4" />
+                </div>
 
                 {/* Phân loại */}
                 <div className="col-span-3 flex items-start justify-center pt-1">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../lib/api';
 
 export default function Onboarding() {
   const [step, setStep] = useState(1);
@@ -20,9 +21,8 @@ export default function Onboarding() {
       if (currentUser) {
         setLoading(true);
         try {
-          const response = await fetch(`/api/auth/${currentUser.id}`, {
+          const response = await apiFetch(`/api/auth/${currentUser.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               name,
               gender,
@@ -32,13 +32,10 @@ export default function Onboarding() {
           });
 
           if (response.ok) {
-            login(
-              {
-                ...currentUser,
-                name,
-                onboarding_completed: true
-              },
-              token || ''
+            const storedToken = token || localStorage.getItem('kairoly_token') || '';
+            await login(
+              { ...currentUser, name, onboarding_completed: true },
+              storedToken
             );
             navigate('/dashboard');
           } else {
@@ -63,7 +60,7 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 font-sans">
       <div className="max-w-2xl w-full text-center space-y-12">
-        
+
         {step === 1 && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h1 className="text-4xl md:text-5xl font-medium text-gray-900 mb-12">
@@ -78,8 +75,8 @@ export default function Onboarding() {
         {step === 2 && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h2 className="text-4xl font-medium text-gray-900 mb-12">Bạn muốn được gọi là gì nhỉ?</h2>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="{tên bạn}"
@@ -102,9 +99,9 @@ export default function Onboarding() {
             <div className="max-w-xs mx-auto text-left space-y-4 mb-12">
               {['Nam', 'Nữ', 'Khác', 'Không muốn tiết lộ'].map(g => (
                 <label key={g} className="flex items-center gap-3 text-xl cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="gender" 
+                  <input
+                    type="radio"
+                    name="gender"
                     value={g}
                     checked={gender === g}
                     onChange={(e) => setGender(e.target.value)}
@@ -128,8 +125,8 @@ export default function Onboarding() {
         {step === 4 && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h2 className="text-4xl font-medium text-gray-900 mb-12">Ngày tháng năm sinh của bạn là?</h2>
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
               className="w-full max-w-md bg-white border border-gray-300 rounded-md px-4 py-3 text-xl focus:outline-none focus:border-black mb-12"

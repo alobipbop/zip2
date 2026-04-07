@@ -1,7 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Landing() {
+  const { currentUser, isAuthReady } = useAuth();
+
+  if (!isAuthReady) return null;
+  if (currentUser) return <Navigate to="/dashboard" replace />;
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* Navbar */}
@@ -24,10 +29,10 @@ export default function Landing() {
       <section className="bg-gradient-to-b from-white to-indigo-100/40 py-24 px-8 flex flex-col md:flex-row items-center justify-center gap-16">
         <div className="max-w-xl text-center md:text-left">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-            Sống có kế hoạch.<br/>Phát triển có hệ thống
+            Đừng nói “đã cố gắng rồi”.<br />Nếu thật sự cố, mày đã khác.
           </h1>
           <p className="text-lg text-gray-600 mb-10 leading-relaxed">
-            Kairoly Planning giúp bạn lập kế hoạch tháng, theo dõi tiến độ và tổng kết phát triển bản thân bằng dữ liệu rõ ràng.
+            Công cụ giúp bạn lập kế hoạch tháng, theo dõi tiến độ và nhìn rõ mình đang đi đến đâu.
           </p>
           <Link to="/register" className="inline-block px-8 py-4 bg-white text-gray-900 font-semibold rounded-full shadow-sm hover:shadow-md transition-all border border-gray-100">
             Bắt đầu ngay
@@ -40,14 +45,14 @@ export default function Landing() {
       <section className="py-24 px-8 max-w-6xl mx-auto text-center">
         <h2 className="text-4xl font-bold mb-8 text-gray-900">Bạn có đang rơi vào những điều này?</h2>
         <p className="text-gray-600 mb-16 max-w-2xl mx-auto text-lg leading-relaxed">
-          Bạn đã lập được kế hoạch, nhưng không theo được đến cùng<br/>
-          Kế hoạch ghi ở nhiều nơi, khó để theo dõi và tổng kết<br/>
-          Không biết mình có thực sự tiến bộ hay không<br/>
+          Bạn đã lập được kế hoạch, nhưng không theo được đến cùng<br />
+          Kế hoạch ghi ở nhiều nơi, khó để theo dõi và tổng kết<br />
+          Không biết mình có thực sự tiến bộ hay không<br />
           Thiếu động lực vì không nhìn thấy kết quả rõ ràng
         </p>
-        
+
         <div className="w-24 h-1 bg-gray-200 mx-auto mb-16"></div>
-        
+
         <h3 className="text-2xl font-semibold mb-16 text-gray-800">Kairoly được tạo ra để giải quyết chính những điều đó.</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

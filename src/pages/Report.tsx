@@ -29,6 +29,15 @@ interface DailyEntry {
   cumulativeProgress: number;
 }
 
+interface TypeReport {
+  id: number;
+  name: string;
+  color: string;
+  totalTasks: number;
+  completedTasks: number;
+  progress: number;
+}
+
 interface ReportData {
   goal: {
     id: number;
@@ -46,6 +55,7 @@ interface ReportData {
     timeProgress: number;
   };
   tasks: TaskReport[];
+  typeReports: TypeReport[];
   dailyHistory: DailyEntry[];
 }
 
@@ -152,7 +162,7 @@ export default function Report() {
     );
   }
 
-  const { goal, summary, tasks, dailyHistory } = report;
+  const { goal, summary, tasks, typeReports, dailyHistory } = report;
 
   // Data for plan vs actual chart
   const comparisonData = [
@@ -304,6 +314,61 @@ export default function Report() {
         </motion.div>
       )}
 
+      {/* ===== TYPE REPORTS ===== */}
+      {typeReports && typeReports.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.32 }}
+        >
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Tiến độ theo phân loại</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {typeReports.map((type, index) => {
+              // Derive a readable text color based on background brightness
+              const hex = type.color.replace('#', '');
+              const r = parseInt(hex.substring(0, 2), 16);
+              const g = parseInt(hex.substring(2, 4), 16);
+              const b = parseInt(hex.substring(4, 6), 16);
+              const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+              const textColor = brightness > 160 ? '#1f2937' : '#ffffff';
+              const progressBg = brightness > 160 ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.25)';
+              const progressFill = brightness > 160 ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.85)';
+
+              return (
+                <motion.div
+                  key={type.id}
+                  className="rounded-2xl p-5 shadow-sm flex flex-col gap-3"
+                  style={{ backgroundColor: type.color }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.33 + index * 0.05 }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-bold text-base leading-tight" style={{ color: textColor }}>{type.name}</span>
+                    <span className="text-2xl font-bold shrink-0" style={{ color: textColor }}>{type.progress}%</span>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: progressBg }}>
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: progressFill }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${type.progress}%` }}
+                      transition={{ duration: 0.8, delay: 0.4 + index * 0.05 }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm" style={{ color: textColor, opacity: 0.85 }}>
+                    <span>{type.completedTasks}/{type.totalTasks} nhiệm vụ hoàn thành</span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* ===== TASK BREAKDOWN ===== */}
       <motion.div
         className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
@@ -318,42 +383,66 @@ export default function Report() {
           <h3 className="text-xl font-bold text-gray-900">Chi tiết nhiệm vụ</h3>
         </div>
         <div className="divide-y divide-gray-100">
-          {tasks.map((task, index) => (
-            <motion.div
-              key={task.id}
-              className="p-6 flex flex-col sm:flex-row sm:items-center gap-5 hover:bg-gray-50/50 transition-colors"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + index * 0.05 }}
-            >
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-gray-900 text-lg truncate">{task.title}</h4>
-                <p className="text-gray-500 mt-1 text-sm">
-                  Chỉ tiêu: <span className="font-medium">{task.target_total} {task.unit || ''}</span>
-                </p>
-              </div>
+          {tasks.map((task, index) => {
+            const type = typeReports?.find(t => t.id === task.type_id);
+            const prevTask = tasks[index - 1];
+            const typeChanged = index === 0 || prevTask?.type_id !== task.type_id;
 
-              <div className="w-full sm:w-80">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-gray-700">
-                    {task.totalTracked} / {task.target_total}
-                    {task.unit ? ` ${task.unit}` : ''}
-                  </span>
-                  <span className={`text-sm font-bold ${task.progress >= 100 ? 'text-emerald-600' : 'text-indigo-600'}`}>
-                    {task.progress}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <motion.div
-                    className={`h-full rounded-full ${task.progress >= 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(task.progress, 100)}%` }}
-                    transition={{ duration: 0.8, delay: 0.4 + index * 0.05 }}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          ))}
+            return (
+              <React.Fragment key={task.id}>
+                {typeChanged && type && (
+                  <div className="px-6 pt-4 pb-1 flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: type.color }}
+                    />
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{type.name}</span>
+                  </div>
+                )}
+                <motion.div
+                  className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-5 hover:bg-gray-50/50 transition-colors"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + index * 0.05 }}
+                >
+                  <div className="flex-1 min-w-0 flex items-center gap-3">
+                    {type && (
+                      <span
+                        className="w-1 self-stretch rounded-full shrink-0"
+                        style={{ backgroundColor: type.color }}
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-gray-900 text-lg truncate">{task.title}</h4>
+                      <p className="text-gray-500 mt-0.5 text-sm">
+                        Chỉ tiêu: <span className="font-medium">{task.target_total} {task.unit || ''}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="w-full sm:w-80">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-bold text-gray-700">
+                        {task.totalTracked} / {task.target_total}
+                        {task.unit ? ` ${task.unit}` : ''}
+                      </span>
+                      <span className={`text-sm font-bold ${task.progress >= 100 ? 'text-emerald-600' : 'text-indigo-600'}`}>
+                        {task.progress}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                      <motion.div
+                        className={`h-full rounded-full ${task.progress >= 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(task.progress, 100)}%` }}
+                        transition={{ duration: 0.8, delay: 0.4 + index * 0.05 }}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              </React.Fragment>
+            );
+          })}
           {tasks.length === 0 && (
             <div className="p-8 text-center text-gray-400">Không có nhiệm vụ nào.</div>
           )}
