@@ -8,4 +8,4 @@ coverage/
 !.env.example
 NGHIEP_VU.md
 PHAN_TICH_DU_AN.md
-CONG_TRUD_CODE.md
+CONG_CODE.md
