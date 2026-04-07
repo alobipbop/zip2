@@ -28,8 +28,8 @@ export default function Landing() {
       {/* Hero */}
       <section className="bg-gradient-to-b from-white to-indigo-100/40 py-24 px-8 flex flex-col md:flex-row items-center justify-center gap-16">
         <div className="max-w-xl text-center md:text-left">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-            Đừng nói “đã cố gắng rồi”.<br />Nếu thật sự cố, mày đã khác.
+          <h1 className="text-5xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
+            Bạn biết mình phải làm.<br />Đừng tỏ ra bận rộn.
           </h1>
           <p className="text-lg text-gray-600 mb-10 leading-relaxed">
             Công cụ giúp bạn lập kế hoạch tháng, theo dõi tiến độ và nhìn rõ mình đang đi đến đâu.
